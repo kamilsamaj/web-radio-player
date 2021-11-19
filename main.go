@@ -18,25 +18,37 @@ var tpl *template.Template
 var cmd *exec.Cmd
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	err := stopIfPlaying()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = tpl.ExecuteTemplate(w, "home.gohtml", nil)
-	if err != nil {
-		log.Fatalln(err)
+	if r.Method == http.MethodGet {
+		err := stopIfPlaying()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = tpl.ExecuteTemplate(w, "home.gohtml", nil)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	} else {
+		log.Printf("unsupported method %s on %s", r.Method, r.URL)
 	}
 }
 
 func rockRadioHandler(w http.ResponseWriter, r *http.Request) {
-	err := playStream("https://ice.abradio.cz/rockradiomorava64.aac")
-	if err != nil {
-		log.Fatalln(err)
+	if r.Method == http.MethodGet {
+		err := playStream("https://ice.abradio.cz/rockradiomorava64.aac")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = showRadioPage(w)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	} else {
+		log.Printf("unsupported method %s on %s", r.Method, r.URL)
 	}
-	err = showRadioPage(w)
-	if err != nil {
-		log.Fatalln(err)
-	}
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func showRadioPage(w http.ResponseWriter) error {
@@ -67,6 +79,7 @@ func stopIfPlaying() error {
 		if err != nil {
 			return err
 		}
+		_ = cmd.Wait()
 		log.Printf("process %d successfully stopped", cmd.Process.Pid)
 		cmd = nil
 	}
@@ -83,6 +96,7 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", rootHandler)
+	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/rock-radio", rockRadioHandler)
 	fmt.Println("listening on http://localhost:8080")
 	err := http.ListenAndServe(":8080", nil)
