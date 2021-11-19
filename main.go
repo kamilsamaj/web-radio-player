@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"html/template"
@@ -51,6 +52,21 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
+func stopHandler(w http.ResponseWriter, r *http.Request) {
+	var outb, errb bytes.Buffer
+	log.Println("running pkill mpv")
+	cmd = exec.Command("pkill", "mpv")
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
+	if err != nil {
+		log.Println(err)
+	}
+	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+	fmt.Fprintln(w, "killed all mpv processes")
+	fmt.Fprintln(w, outb.String(), errb.String())
+}
+
 func showRadioPage(w http.ResponseWriter) error {
 	// return HTML page
 	err := tpl.ExecuteTemplate(w, "radio.gohtml", nil)
@@ -98,6 +114,7 @@ func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.HandleFunc("/rock-radio", rockRadioHandler)
+	http.HandleFunc("/stop", stopHandler)
 	fmt.Println("listening on http://localhost:8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
