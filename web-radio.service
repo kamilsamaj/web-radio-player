@@ -1,0 +1,14 @@
+[Unit]
+Description=web-radio
+
+[Service]
+Type=simple
+User=pi
+RemainAfterExit=yes
+Restart=always
+WorkingDirectory=/home/pi/
+ExecStart=/home/pi/web-radio-player
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
