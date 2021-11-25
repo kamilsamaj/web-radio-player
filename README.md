@@ -5,7 +5,7 @@ Go binary with an embedded web server that can play my favorite internet radios 
 ## Compile
 
 ```shell
-GOARCH=arm GOARM=7 GOOS=linux go build
+GOARCH=arm GOARM=7 GOOS=linux go build -ldflags='-w -s'
 ```
 
 ## Create a systemd service
