@@ -35,7 +35,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func rockRadioHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		err := playStream("https://ice.abradio.cz/rockradiomorava64.aac")
+		var err error
+		if cmd != nil {
+			log.Println("Rock radio already playing")
+		} else {
+			err = playStream("https://ice.abradio.cz/rockradiomorava64.aac")
+		}
 		if err != nil {
 			log.Fatalln(err)
 		}
